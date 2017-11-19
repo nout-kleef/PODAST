@@ -20,6 +20,7 @@ Set d # amount of data bits
 Set plaintext # binary representation (with leading 0's) of text to be hidden in image
 Set image # array of binary representations (with leading 0's) of pixels
 While plaintext.length > 0 And pixel_available(image, currentIndex, p):
+	...
 
 pixel_available(image, i, p):
 	# 2^p - 1 potential pixels (-1, because 111..(p times) is used as a terminator)
