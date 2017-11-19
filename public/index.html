@@ -15,6 +15,7 @@
 		<!-- <link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon"> -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" type="text/css">
 		<link rel="stylesheet" href="css/theme.css" type="text/css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<script src="js/vendor/p5/p5/p5.min.js" type="text/javascript"></script>
 		<script src="js/PODAST/variables.js" type="text/javascript"></script>
 		<script src="js/PODAST/variables_local.js" type="text/javascript"></script>
@@ -47,8 +48,25 @@
 				</ol>
 			</div>
 		</div>
-		
 		<div id="canvasHolder" class="canvas-holder">
+		</div>
+		<div id="controls">
+			<h3>Configuration</h3>
+			First pixel index: <input id="firstPixelIndex" type="number" min="0" max="0" value="0"></input>
+			Amount of pointer bits: <input id="pointerBits" type="number" min="1" max="24" value="1"></input>
+			Amount of data bits: <input id="dataBits" type="number" min="1" max="24" value="1"></input>
+		</div>
+		<div id="imagePicker">
+			<h3>Pick an image</h3>
+			<div class="imageHolder">
+				<img src="img/monalisa256.png">
+			</div>
+			<div class="imageHolder">
+				<img src="img/monalisa128.png">
+			</div>
+			<div class="imageHolder">
+				<img src="img/monalisa64.png">
+			</div>
 		</div>
 	</body>
 </html>

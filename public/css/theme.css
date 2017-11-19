@@ -19,3 +19,12 @@ body {
 	content: "optional: ";
 	font-weight: 700;
 }
+
+#imagePicker div.imageHolder {
+	display: inline-block;
+	border: 2px solid #000;
+}
+
+#imagePicker div.imageHolder.selected {
+	border: 2px solid #35f;
+}

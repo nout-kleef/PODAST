@@ -14,3 +14,6 @@
  * }
  */
 const DEBUGGING = 3;
+if(DEBUGGING > 0) {
+	console.info("Debugging level: " + DEBUGGING);
+}

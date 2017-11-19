@@ -18,10 +18,54 @@ let dataBits; // amount of bits just before the pointer bits, holding the data t
  * // 			r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b
  */
 
-function init(i, p, d) {
-	firstPixelIndex = i;
-	pointerBits = p;
-	dataBits = d;
+function init() {
 	inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input");
 	outputImage = new PODASTImage(imageMargin * 3 + imageWidth, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "output");
+	$(".imageHolder").on("click", function() {
+		// deselect all
+		$(".imageHolder").removeClass("selected");
+		// load image
+		if(DEBUGGING >= 3) {
+			console.log($("img", this).attr("src"));
+		}
+		loadImage($("img", this).attr("src"), img => {
+			resizeCanvasForNewImage(img.width, img.height);
+			img.loadPixels();
+			inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input", img);
+			outputImage.topLeft.x = imageMargin * 3 + imageWidth;
+			outputImage.dimensions = {
+				width: img.width,
+				height: img.height
+			};
+		}, event => {
+			if(DEBUGGING >= 2) {
+				console.warn("Something went wrong loading selected image");
+			}
+		});
+		// select clicked
+		$(this).addClass("selected");
+	});
 }
+
+function resizeCanvasForNewImage(newWidth, newHeight) {
+	imageWidth = newWidth;
+	imageHeight = newHeight;
+	resizeCanvas(getFullWidth(), getFullHeight());
+}
+
+$(document).ready(function() {
+	// initiate variables
+	firstPixelIndex = parseInt($("#firstPixelIndex").val());
+	pointerBits = parseInt($("#pointerBits").val());
+	dataBits = parseInt($("#dataBits").val());
+	// keep variables up to date
+	$("#firstPixelIndex").on("keyup change", function() {
+		firstPixelIndex = parseInt($("#firstPixelIndex").val());
+	});
+	$("#pointerBits").on("keyup change", function() {
+		pointerBits = parseInt($("#pointerBits").val());
+	});
+	$("#dataBits").on("keyup change", function() {
+		dataBits = parseInt($("#dataBits").val());
+	});
+});
