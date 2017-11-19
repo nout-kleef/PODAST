@@ -13,4 +13,9 @@ By doing so, we can point to the next pixel, which already stores the correct da
 
 # Pseudocode
 
-`in progress`
+```{javascript, eval=FALSE}
+loop through each species
+    loop through each measurement of the current species
+    ...
+etc.
+```
