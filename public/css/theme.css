@@ -1,0 +1,21 @@
+body {
+	font-family: "Roboto", sans-serif;
+}
+
+.workflow {
+	text-align: center;
+}
+
+.col-50 {
+	width: 50%;
+	display: inline-block;
+}
+
+.col-50 ol {
+	text-align: left;
+}
+
+.optional:before {
+	content: "optional: ";
+	font-weight: 700;
+}
