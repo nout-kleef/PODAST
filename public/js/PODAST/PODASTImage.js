@@ -10,10 +10,7 @@ function PODASTImage(x, y, w, h, type) {
 	this.type = type === "output" ? "output" : "input";
 
 	this.show = function() {
-		// if(DEBUGGING >= 3) {
-		// 	console.log(this.pixelArray);
-		// }
-		if(typeof this.pixelArray === 'undefined') {
+		if(typeof this.pixels === 'undefined') {
 			// show box indicating where image can be shown
 			noFill();
 			stroke(127, 127, 0);
