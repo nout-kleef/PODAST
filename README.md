@@ -14,8 +14,18 @@ By doing so, we can point to the next pixel, which already stores the correct da
 # Pseudocode
 
 ```{javascript, eval=FALSE}
-loop through each species
-    loop through each measurement of the current species
-    ...
-etc.
+Set i # index of first pixel
+Set p # amount of pointer bits
+Set d # amount of data bits
+Set plaintext # binary representation (with leading 0's) of text to be hidden in image
+Set image # array of binary representations (with leading 0's) of pixels
+While plaintext.length > 0 And pixel_available(image, currentIndex, p):
+
+pixel_available(image, i, p):
+	# 2^p - 1 potential pixels (-1, because 111..(p times) is used as a terminator)
+	Set potential_pixels = image.slice(i, i + 2^p - 1)
+	For pixel in potential_pixels:
+		If pixel Is Not altered: # we have not altered this pixel before
+			return True
+	return False
 ```
