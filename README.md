@@ -32,7 +32,7 @@ For pixel In image:
 	Set self.data = Null
 	Set self.pointer = Null
 	Set self.value = value # current value in image
-	
+
 
 While plaintext.length > 0 And pixel_available(image_binary, current_index, p):
 
@@ -44,7 +44,7 @@ While plaintext.length > 0 And pixel_available(image_binary, current_index, p):
 	current_index += next_index
 
 pixel_available(image_binary, i, p):
-	# 2^p - 1 potential pixels (-1, because 111..(p times) is used as a terminator)
+	# 2^p-2 potential pixels (-1, because 00..(p times) is used as a terminator; -1, because we have a range from 0..1 through 1..1)
 	Set potential_pixels = image_binary.slice(i, i + 2^p - 1)
 	For pixel in potential_pixels:
 		If pixel Is Not altered: # we have not altered this pixel before
