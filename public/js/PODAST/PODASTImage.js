@@ -19,19 +19,15 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	// divide the plaintext binary into small portions, ready to be divided over the to be altered pixels
 	let dataPortions = plaintext.match(new RegExp("[01]{1," + d + "}", "g")); // "0111001" --> ["01", "11", "00", "1"] (example I)
 	// add bits indicator (see example II)
-	dataPortions.push(
-		dataPortions[dataPortions.length - 1] // the final element
-		.length // get how many bits are data
-		.
-	);
+	dataPortions.push(addLeadingZeroes(decimalToBinary(dataPortions[dataPortions.length - 1].length), d));
 	if(DEBUGGING >= 3) {
 		console.log("data portions: ", dataPortions);
 	}
 	// hide each portion in a different pixel
 	let pixelIndex = i;
-	for(var p = 0; p < dataPortpons.length; p++) {
-		let portpon = dataPortions[p];
-		if(p === dataPortions.length - 1) {
+	for(var p = 0; p < dataPortions.length; p++) {
+		let portion = dataPortions[p];
+		if(portion.length) {
 			/* This is the final iteration
 			 * We need to check how many bits the last portion contains,
 			 * because otherwise there is no way to tell if "01" or "1" was encrypted
