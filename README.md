@@ -19,7 +19,6 @@ Set p # amount of pointer bits
 Set d # amount of data bits
 Set plaintext # binary representation (with leading 0's) of text to be hidden in image
 Set image # array of PODASTPixel instances
-Set image_binary # array of binary representations (with leading 0's) of pixels
 
 # we need to edit plaintext.length / d + 1 [contains pointer terminator]
 # example 1:
@@ -29,7 +28,11 @@ Set image_binary # array of binary representations (with leading 0's) of pixels
 		# next_index = 2 (pixel at current_index + next_index will be altered to "xx..(14)..xx01xxx")
 		# 
 
-For pixel In 
+For pixel In image:
+	Set self.data = Null
+	Set self.pointer = Null
+	Set self.value = value # current value in image
+	
 
 While plaintext.length > 0 And pixel_available(image_binary, current_index, p):
 
