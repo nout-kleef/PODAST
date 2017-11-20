@@ -25,10 +25,17 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	}
 	// hide each portion in a different pixel
 	let pixelIndex = i;
+	let previousPixel;
+	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
 	for(var p = 0; p < dataPortions.length; p++) {
-		let portion = dataPortions[p];
-		if(portion.length) {
-			/* This is the final iteration
+		let currentPortion = dataPortions[p];
+		let currentPixel = this.pixels[pixelIndex];
+		// update the data
+		currentPixel.binaryData = currentPortion;
+		// find next pixel
+		getNextPixel()
+		if(p === dataPortions.length - 2) {
+			/* This is the final iteration of actual data
 			 * We need to check how many bits the last portion contains,
 			 * because otherwise there is no way to tell if "01" or "1" was encrypted
 			 * when we're decrypting a pixel.
@@ -47,7 +54,20 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			 * 			so the first 2 characters of "10111" should be discarded.
 			 * 	That's why we add that final portion to the dataPortions element. (see note I)
 			 */
+		} else if(p === dataPortions.length - 1) {
 		} else {
+		}
+		previousPixel = currentPixel;
+	}
+};
+
+PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead) {
+	let response = false;
+	for(var i = index; i < index + lookahead; i++) {
+		if(this.pixels[i].isAltered()) {
+			// can't alter it twice
+			continue;
+		} else if(1) {
 
 		}
 	}
