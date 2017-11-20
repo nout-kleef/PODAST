@@ -29,11 +29,11 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
 	for(var p = 0; p < dataPortions.length; p++) {
 		let currentPortion = dataPortions[p];
+		let nextPortion;
+		let relativeNextIndex;
 		let currentPixel = this.pixels[pixelIndex];
 		// update the data
 		currentPixel.binaryData = currentPortion;
-		// find next pixel
-		getNextPixel()
 		if(p === dataPortions.length - 2) {
 			/* This is the final iteration of actual data
 			 * We need to check how many bits the last portion contains,
@@ -56,21 +56,41 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			 */
 		} else if(p === dataPortions.length - 1) {
 		} else {
+			nextPortion = dataPortions[p + 1];
+			// find next pixel
+			relativeNextIndex = getNextPixelIndex(nextPortion, pixelIndex, pixelsRange, p, d);
+			if(relativeNextIndex === false) {
+				if(DEBUGGING >= 1) {
+					console.error("Could not encrypt with the following parameters; i: " + 
+						i + ", p: " + p + ", d: " + d + ". Please retry with different parameters.");
+				}
+				return;
+			}
+			currentPixel.binaryPointer = addLeadingZeroes(decimalToBinary(relativeNextIndex), p);
 		}
+		pixelIndex += relativeNextIndex;
 		previousPixel = currentPixel;
 	}
 };
 
-PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead) {
+PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d) {
 	let response = false;
 	for(var i = index; i < index + lookahead; i++) {
 		if(this.pixels[i].isAltered()) {
 			// can't alter it twice
 			continue;
-		} else if(1) {
-
+		} else {
+			const currentPixelData = this.pixels[i].significanceArray.slice(-p-d, -p);
+			if(currentPixelData === data || i === index + lookahead - 1) {
+				if(i === index + lookahead - 1 && DEBUGGING >= 2) {
+					console.info("Unable to find pixel that didn't have to be edited, using last pixel in range instead.");
+				}
+				response = i - index;
+				break;
+			}
 		}
 	}
+	return response;
 };
 
 PODASTImage.prototype.build = function() {

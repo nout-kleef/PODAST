@@ -2,6 +2,7 @@ function PODASTPixel(value) {
 	this.value = value.slice(0, 3); // opacity is not needed
 	this.binaryData = null;
 	this.binaryPointer = null;
+	this.significanceArray = this.getSignificanceArray();
 }
 
 PODASTPixel.prototype.isAltered = () => this.binaryData && this.binaryPointer;
@@ -17,5 +18,5 @@ PODASTPixel.prototype.getSignificanceArray = function() {
 	for(var i = 0; i < 8; i++) {
 		responseString += r.charAt(i) + g.charAt(i) + b.charAt(i);
 	}
-	return responseString;
+	return responseString.split("");
 };
