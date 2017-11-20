@@ -18,15 +18,35 @@ Set i # index of first pixel
 Set p # amount of pointer bits
 Set d # amount of data bits
 Set plaintext # binary representation (with leading 0's) of text to be hidden in image
-Set image # array of binary representations (with leading 0's) of pixels
-While plaintext.length > 0 And pixel_available(image, currentIndex, p):
-	...
+Set image # array of PODASTPixel instances
+Set image_binary # array of binary representations (with leading 0's) of pixels
 
-pixel_available(image, i, p):
+# we need to edit plaintext.length / d + 1 [contains pointer terminator]
+# example 1:
+	# plaintext = "0100", i = 0, p = 3, d = 2
+	# step 1:
+		# data_bin = "01"																	  ddppp
+		# next_index = 2 (pixel at current_index + next_index will be altered to "xx..(14)..xx01xxx")
+		# 
+
+For pixel In 
+
+While plaintext.length > 0 And pixel_available(image_binary, current_index, p):
+
+	Set data_bin = plaintext.splice(0, d)
+	# choose a pixel
+	Set next_index = get_relative_nextpixel_index(current_index, p, data_bin) # decimal
+	Set currentpixel
+	...
+	current_index += next_index
+
+pixel_available(image_binary, i, p):
 	# 2^p - 1 potential pixels (-1, because 111..(p times) is used as a terminator)
-	Set potential_pixels = image.slice(i, i + 2^p - 1)
+	Set potential_pixels = image_binary.slice(i, i + 2^p - 1)
 	For pixel in potential_pixels:
 		If pixel Is Not altered: # we have not altered this pixel before
 			return True
 	return False
+
+get_relative_nextpixel_index(current_index, )
 ```
