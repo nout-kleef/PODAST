@@ -9,13 +9,9 @@ function PODASTImage(x, y, w, h, type, img) {
 	};
 	this.type = type === "output" ? "output" : "input";
 	this.img = img;
-	if(typeof this.img !== "undefined") {
-		this.build();
-	}
 	this.pixels;
 	this.bytePixels; // Uint8Array holding pixel values after build
-	this.domImg;
-	this.blobURL;
+	this.imageData;
 }
 
 PODASTImage.prototype.updateCustomImage = function() {
@@ -23,19 +19,8 @@ PODASTImage.prototype.updateCustomImage = function() {
 	const valuesArray = this.pixels.map(a => a.value);
 	// join the pixels into a Uint8Array for a speed-up
 	this.bytePixels = Uint8Array.from([].concat.apply([], valuesArray));
-	// base64 for image data
-	// const base64Data = btoa(String.fromCharCode.apply(null, this.bytePixels));
-	// const blob = new Blob([this.bytePixels], {'type': 'image/png'});
-	// if(typeof this.blobURL !== "undefined") {
-	// 	URL.revokeObjectURL(this.blobURL);
-	// }
-	// this.blobURL = URL.createObjectURL(blob);
-	// // create the new image
-	// this.domImg = document.createElement("img");
-	// this.domImg.src = this.blobURL;
-	// if(DEBUGGING >= 3) {
-	// 	console.log(this.blobURL, this.domImg);
-	// }
+	this.imageData = ctx.getImageData(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
+	this.imageData.data.set(this.bytePixels);
 }
 
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
@@ -128,64 +113,48 @@ PODASTImage.prototype.build = function() {
 	}
 	this.pixels = [];
 	let originalRgbaPixels = Array.from(this.img.pixels); // Uint8ClampedArray to Array
-	while(originalRgbaPixels.length > 0) {
-		const originalRgbaPixel = originalRgbaPixels.splice(0, 4);
-		this.pixels.push(new PODASTPixel(originalRgbaPixel));
+	for(var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
+		this.pixels.push(new PODASTPixel(originalRgbaPixels.slice(i, i + 4)));
 	}
 	this.updateCustomImage();
 };
 
 PODASTImage.prototype.show = function() {
 	if(typeof this.bytePixels === 'undefined') {
-		if(typeof this.img === 'undefined') {
-			// show box indicating where image can be shown
-			noFill();
-			stroke(127, 127, 0);
-			strokeWeight(1);
-			rect(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
-			// explanatory text
-			textSize(headerHeight * 0.3);
-			fill(217);
-			noStroke();
-			textAlign(CENTER);
-			let str;
-			if(this.type === "input") {
-				str = "Upload an image to see it displayed here.";
-			} else if(this.type === "output") {
-				str = "Upload an image to see the image\n after encryption displayed here.";
-			}
-			text(str, this.topLeft.x + 0.5 * this.dimensions.width, this.topLeft.y + 0.5 * this.dimensions.height);
-		} else {
-			// show regular p5Image
-			image(this.img, this.topLeft.x, this.topLeft.y);
+		// show box indicating where image can be shown
+		noFill();
+		stroke(127, 127, 0);
+		strokeWeight(1);
+		rect(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
+		// explanatory text
+		textSize(headerHeight * 0.3);
+		fill(217);
+		noStroke();
+		textAlign(CENTER);
+		let str;
+		if(this.type === "input") {
+			str = "Upload an image to see it displayed here.";
+		} else if(this.type === "output") {
+			str = "Upload an image to see the image\n after encryption displayed here.";
 		}
+		text(str, this.topLeft.x + 0.5 * this.dimensions.width, this.topLeft.y + 0.5 * this.dimensions.height);
 	} else {
 		// show PODASTImage
-		let imageData = ctx.getImageData(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
-		imageData.data.set(this.bytePixels);
-		if(frameCount % 15 === 0) console.log(imageData.data[0]);
-		putImageData(ctx, imageData, this.topLeft.x, this.topLeft.y);
+		putImageData(ctx, this.imageData, this.topLeft.x, this.topLeft.y);
 	}
 };
 
-function putImageData(ctx, imageData, dx, dy,
-    dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
-  var data = imageData.data;
-  var height = imageData.height;
-  var width = imageData.width;
-  dirtyX = dirtyX || 0;
-  dirtyY = dirtyY || 0;
-  dirtyWidth = dirtyWidth !== undefined? dirtyWidth: width;
-  dirtyHeight = dirtyHeight !== undefined? dirtyHeight: height;
-  var limitBottom = dirtyY + dirtyHeight;
-  var limitRight = dirtyX + dirtyWidth;
-  for (var y = dirtyY; y < limitBottom; y++) {
-    for (var x = dirtyX; x < limitRight; x++) {
-      var pos = y * width + x;
-      ctx.fillStyle = 'rgba(' + data[pos*4+0]
-                        + ',' + data[pos*4+1]
-                        + ',' + data[pos*4+2]
-                        + ',' + (data[pos*4+3]/255) + ')';
+
+// TODO: optimize with base64 data instead of changing fillstyle every pixel
+// currently takes ~60ms to run for a 172x256 png!
+function putImageData(ctx, imageData, dx, dy) {
+  const data = imageData.data;
+  const height = imageData.height;
+  const width = imageData.width;
+  for (var y = 0; y < height; y++) {
+    for (var x = 0; x < width; x++) {
+      const pos = (y * width + x) * 4;
+      ctx.fillStyle = 'rgb(' + data[pos] + ',' + data[pos + 1] + ',' + data[pos + 2] + ')';
       ctx.fillRect(x + dx, y + dy, 1, 1);
     }
   }
