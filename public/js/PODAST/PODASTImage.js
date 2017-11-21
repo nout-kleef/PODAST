@@ -9,20 +9,37 @@ function PODASTImage(x, y, w, h, type, img) {
 	};
 	this.type = type === "output" ? "output" : "input";
 	this.img = img;
+	if(typeof this.img !== "undefined") {
+		this.build();
+	}
 	this.pixels;
-	this.customImage;
+	this.bytePixels; // Uint8Array holding pixel values after build
+	this.domImg;
+	this.blobURL;
 }
 
-PODASTImage.prototype.updateCustomImage = () => {
-	let reader = new FileReader();
-	// join the pixels into a Uint8Array
-	// TODO: dont concat entire PODASTPixel instances, just the values
-	const pixelValues = Uint8Array.from([].concat.apply([], this.pixels));
-	reader.readAsBinaryString(this)
+PODASTImage.prototype.updateCustomImage = function() {
+	// create array of pixel.value arrays
+	const valuesArray = this.pixels.map(a => a.value);
+	// join the pixels into a Uint8Array for a speed-up
+	this.bytePixels = Uint8Array.from([].concat.apply([], valuesArray));
+	// base64 for image data
+	// const base64Data = btoa(String.fromCharCode.apply(null, this.bytePixels));
+	// const blob = new Blob([this.bytePixels], {'type': 'image/png'});
+	// if(typeof this.blobURL !== "undefined") {
+	// 	URL.revokeObjectURL(this.blobURL);
+	// }
+	// this.blobURL = URL.createObjectURL(blob);
+	// // create the new image
+	// this.domImg = document.createElement("img");
+	// this.domImg.src = this.blobURL;
+	// if(DEBUGGING >= 3) {
+	// 	console.log(this.blobURL, this.domImg);
+	// }
 }
 
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
-	// copy self to new, encrypted image
+	// copy self to new, to be encrypted image
 	let newImage = new PODASTImage();
 	Object.assign(newImage, this);
 	// divide the plaintext binary into small portions, ready to be divided over the to be altered pixels
@@ -89,7 +106,7 @@ PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d)
 			// can't alter it twice
 			continue;
 		} else {
-			const currentPixelData = this.pixels[i].significanceArray.slice(-p-d, -p);
+			const currentPixelData = this.pixels[i].getSignificanceArray().slice(-p-d, -p);
 			if(currentPixelData === data || i === index + lookahead - 1) {
 				if(i === index + lookahead - 1 && DEBUGGING >= 2) {
 					console.info("Unable to find pixel that already contained the data we're trying to hide, using last pixel in range instead.");
@@ -115,14 +132,12 @@ PODASTImage.prototype.build = function() {
 		const originalRgbaPixel = originalRgbaPixels.splice(0, 4);
 		this.pixels.push(new PODASTPixel(originalRgbaPixel));
 	}
+	this.updateCustomImage();
 };
 
 PODASTImage.prototype.show = function() {
-	if(typeof this.pixels === 'undefined' || this.pixels.length === 0) {
-		if(typeof this.img !== 'undefined') {
-			// show regular p5Image
-			image(this.img, this.topLeft.x, this.topLeft.y);
-		} else {
+	if(typeof this.bytePixels === 'undefined') {
+		if(typeof this.img === 'undefined') {
 			// show box indicating where image can be shown
 			noFill();
 			stroke(127, 127, 0);
@@ -140,10 +155,38 @@ PODASTImage.prototype.show = function() {
 				str = "Upload an image to see the image\n after encryption displayed here.";
 			}
 			text(str, this.topLeft.x + 0.5 * this.dimensions.width, this.topLeft.y + 0.5 * this.dimensions.height);
+		} else {
+			// show regular p5Image
+			image(this.img, this.topLeft.x, this.topLeft.y);
 		}
 	} else {
 		// show PODASTImage
-		let reader = new FileReader();
-		
+		let imageData = ctx.getImageData(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
+		imageData.data.set(this.bytePixels);
+		if(frameCount % 15 === 0) console.log(imageData.data[0]);
+		putImageData(ctx, imageData, this.topLeft.x, this.topLeft.y);
 	}
 };
+
+function putImageData(ctx, imageData, dx, dy,
+    dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+  var data = imageData.data;
+  var height = imageData.height;
+  var width = imageData.width;
+  dirtyX = dirtyX || 0;
+  dirtyY = dirtyY || 0;
+  dirtyWidth = dirtyWidth !== undefined? dirtyWidth: width;
+  dirtyHeight = dirtyHeight !== undefined? dirtyHeight: height;
+  var limitBottom = dirtyY + dirtyHeight;
+  var limitRight = dirtyX + dirtyWidth;
+  for (var y = dirtyY; y < limitBottom; y++) {
+    for (var x = dirtyX; x < limitRight; x++) {
+      var pos = y * width + x;
+      ctx.fillStyle = 'rgba(' + data[pos*4+0]
+                        + ',' + data[pos*4+1]
+                        + ',' + data[pos*4+2]
+                        + ',' + (data[pos*4+3]/255) + ')';
+      ctx.fillRect(x + dx, y + dy, 1, 1);
+    }
+  }
+}

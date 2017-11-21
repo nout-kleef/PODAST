@@ -21,6 +21,7 @@ let dataBits; // amount of bits just before the pointer bits, holding the data t
 function init() {
 	inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input");
 	outputImage = new PODASTImage(imageMargin * 3 + imageWidth, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "output");
+	// select new input image
 	$(".imageHolder").on("click", function() {
 		// deselect all
 		$(".imageHolder").removeClass("selected");
@@ -32,6 +33,7 @@ function init() {
 			resizeCanvasForNewImage(img.width, img.height);
 			img.loadPixels();
 			inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input", img);
+			inputImage.build();
 			outputImage.topLeft.x = imageMargin * 3 + imageWidth;
 			outputImage.dimensions = {
 				width: img.width,
