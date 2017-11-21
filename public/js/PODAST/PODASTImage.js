@@ -46,7 +46,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		const currentPointer = 0;
 		// update data for current pixel
 		currentPixel.binaryData = currentData;
-		const relativeNextPixelIndex = newImage.getNextPixelIndex(nextData, pixelIndex, p, d);
+		const relativeNextPixelIndex = newImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
 		if(relativeNextPixelIndex === false) {
 			if(DEBUGGING >= 1) {
 				console.warn("PODAST was unable to complete the encryption process with the following \n" +
@@ -56,6 +56,8 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			}
 			return false;
 		} else {
+			// update pointer for current pixel
+			currentPixel.binaryPointer = addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p);
 			if(m === dataPortions.length - 2) {
 				// possible bug: should be modularized or not?
 				const nextPixelIndex = pixelIndex + relativeNextPixelIndex;
@@ -73,24 +75,32 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 				}
 				break;
 			}
-			// update pointer for current pixel
-			currentPixel.binaryPointer = addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p);
 		}
-		pixelIndex = nextPixelIndex;
+		pixelIndex += relativeNextPixelIndex;
 	}
 	return newImage;
 };
 
+// for debugging purposes
+PODASTImage.prototype.inspectPixels = function() {
+	for(var i = 0; i < this.pixels.length; i++) {
+		if(this.pixels[i].isAltered()) console.log("Altered pixel at (" + i + "): ", this.pixels[i]);
+	}
+};
+
 PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d) {
 	let response = false;
-	for(var i = index; i < index + lookahead; i++) {
+	for(var i = index + 1 /* current is bound to be altered */; i < index + lookahead; i++) {
 		// TODO optimize?
 		const actualIndex = i % this.pixels.length;
 		if(this.pixels[actualIndex].isAltered()) {
 			// can't alter it twice, would corrupt existing data
+			if(DEBUGGING >= 3) {
+				console.log("pixel at (" + actualIndex + ") is altered.");
+			}
 			continue;
 		} else {
-			const authenticPixelData = this.pixels[actualIndex].getSignificanceArray().slice(-p-d, -p);
+			const authenticPixelData = this.pixels[actualIndex].getSignificanceArray().slice(-p-d, -p).join("");
 			if(authenticPixelData === data) {
 				response = actualIndex - index;
 				break;
