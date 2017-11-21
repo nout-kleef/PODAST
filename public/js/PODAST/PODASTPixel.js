@@ -33,9 +33,6 @@ PODASTPixel.prototype.getSignificanceArray = function() {
 	const g = addLeadingZeroes(decimalToBinary(this.value[1]), 8);
 	const b = addLeadingZeroes(decimalToBinary(this.value[2]), 8);
 	// const a = addLeadingZeroes(decimalToBinary(this.value[3]), 8);
-	if(DEBUGGING >= 3) {
-		console.log(r,g,b);
-	}
 	let responseString = "";
 	for(var i = 0; i < 8; i++) {
 		responseString += r.charAt(i) + g.charAt(i) + b.charAt(i);
