@@ -45,7 +45,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		const nextData = dataPortions[m + 1];
 		const currentPointer = 0;
 		// update data for current pixel
-		currentPixel.binaryData = currentData;
+		currentPixel.insertData(currentData.split(""), p);
 		const relativeNextPixelIndex = newImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
 		if(relativeNextPixelIndex === false) {
 			if(DEBUGGING >= 1) {
@@ -57,15 +57,15 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			return false;
 		} else {
 			// update pointer for current pixel
-			currentPixel.binaryPointer = addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p);
+			currentPixel.insertPointer(addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p).split(""));
 			if(m === dataPortions.length - 2) {
 				// possible bug: should be modularized or not?
 				const nextPixelIndex = pixelIndex + relativeNextPixelIndex;
 				let nextPixel = newImage.pixels[nextPixelIndex];
 				// update data in advance
-				nextPixel.binaryData = nextData;
+				nextPixel.insertData(nextData.split(""), p);
 				// because that pixel will be the last, we can safely set the pointer to 0-terminator
-				nextPixel.binaryPointer = addLeadingZeroes(0, p);
+				nextPixel.insertPointer(addLeadingZeroes(0, p).split(""));
 				// done!
 				if(DEBUGGING >= 1) {
 					console.info("Success! PODAST successfully encrypted your data with the following parameters: \n" +
@@ -78,6 +78,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		}
 		pixelIndex += relativeNextPixelIndex;
 	}
+	newImage.updateCustomImage();
 	return newImage;
 };
 

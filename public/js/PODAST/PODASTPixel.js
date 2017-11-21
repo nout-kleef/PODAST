@@ -4,6 +4,26 @@ function PODASTPixel(value) {
 	this.binaryPointer = null;
 }
 
+PODASTPixel.prototype.insertPointer = function(binaryPointerArray) {
+	let tempSignificanceArray = this.getSignificanceArray();
+	// replace ending with new pointer
+	Array.prototype.splice.apply(tempSignificanceArray, [-binaryPointerArray.length, binaryPointerArray.length].concat(binaryPointerArray));
+	// insert
+	this.updateValueFromSignificanceArray(tempSignificanceArray);
+	// for debugging & to check if altered during encryption process
+	this.binaryPointer = binaryPointerArray.join("");
+};
+
+PODASTPixel.prototype.insertData = function(binaryDataArray, p) {
+	let tempSignificanceArray = this.getSignificanceArray();
+	// replace with new data
+	Array.prototype.splice.apply(tempSignificanceArray, [-binaryDataArray.length - p, binaryDataArray.length].concat(binaryDataArray));
+	// insert
+	this.updateValueFromSignificanceArray(tempSignificanceArray);
+	// for debugging & to check if altered during encryption process
+	this.binaryData = binaryDataArray.join("");
+};
+
 PODASTPixel.prototype.isAltered = function() {
 	return !!(this.binaryData || this.binaryPointer);
 }
