@@ -21,7 +21,7 @@ PODASTImage.prototype.updateCustomImage = function() {
 	this.bytePixels = Uint8Array.from([].concat.apply([], valuesArray));
 	this.imageData = ctx.getImageData(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
 	this.imageData.data.set(this.bytePixels);
-}
+};
 
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	// copy self to new, to be encrypted image
@@ -80,6 +80,74 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	}
 	newImage.updateCustomImage();
 	return newImage;
+};
+
+PODASTImage.prototype.decrypt = function() {
+	let i;
+	let d;
+	let p;
+	if(arguments.length === 0) {
+		// invalid
+		if(DEBUGGING >= 1) {
+			console.warn("Not enough arguments specified.");
+		}
+		return false;
+	} else if(arguments.length === 1) {
+		// private key?
+		let matches;
+		try {
+			matches = arguments[0].match(validatePrivateKeyRegEx);
+		} catch(exception) {
+			matches = null;
+		}
+		if(matches === null) {
+			if(DEBUGGING >= 1) {
+				console.warn("Invalid private key format specified.");
+			}
+			return false;
+		}
+		i = parseInt(matches[1], 10);
+		d = parseInt(matches[2], 10);
+		p = parseInt(matches[3], 10);
+	} else if(arguments.length === 3) {
+		i = arguments[0];
+		d = arguments[1];
+		p = arguments[2];
+	}
+	// using the pixels array would be cheating,
+	// we have to assume that all we have is the Uint8Array,
+	// because that is practically the picture a receiver would decrypt.
+
+	// create new pixels array (local scope)
+	const temporaryPixels = quickBuild(this.bytePixels);
+	// currentPixel is temporaryPixels[i]
+	let currentIndex = i;
+	let currentPixel = temporaryPixels[currentIndex];
+	let currentSignificanceArray = currentPixel.getSignificanceArray();
+	let currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
+	let binaryDataString = currentDecimalPointer === 0 ? "" /* may be stupid, but data wasn't intended to be read */ : currentSignificanceArray.slice(-d-p, -p).join("");
+	// while not terminated (0-terminator in pointer)
+	while(currentDecimalPointer !== 0) {
+		currentIndex = (currentIndex + currentDecimalPointer) % temporaryPixels.length;
+		currentPixel = temporaryPixels[currentIndex];
+		currentSignificanceArray = currentPixel.getSignificanceArray();
+		currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
+		// remember, 0-terminator means that this piece of data tells us how many digits are meaningful.
+		// it's not actual data.
+		let currentDataPiece = currentSignificanceArray.slice(-d-p, -p).join("");
+		if(currentDecimalPointer === 0) {
+			const currentDataDecimalValue = parseInt(currentDataPiece, 2);
+			// get previous data
+			const previousDataPiece = binaryDataString.slice(-d);
+			// get necessary part
+			const previousActualData = previousDataPiece.slice(-currentDataDecimalValue);
+			// cut out unnecessary digits and add necessary
+			binaryDataString = binaryDataString.slice(0, -d) + previousActualData;
+		} else {
+			binaryDataString += currentDataPiece;
+		}
+	}
+	return binaryDataString;
 };
 
 // for debugging purposes
@@ -169,4 +237,13 @@ function putImageData(ctx, imageData, dx, dy) {
       ctx.fillRect(x + dx, y + dy, 1, 1);
     }
   }
+}
+
+function quickBuild(imageData) {
+	let pixels = [];
+	let originalRgbaPixels = Array.from(imageData);
+	for(var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
+		pixels.push(new PODASTPixel(originalRgbaPixels.slice(i, i + 4)));
+	}
+	return pixels;
 }
