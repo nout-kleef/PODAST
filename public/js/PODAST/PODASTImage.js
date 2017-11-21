@@ -10,6 +10,15 @@ function PODASTImage(x, y, w, h, type, img) {
 	this.type = type === "output" ? "output" : "input";
 	this.img = img;
 	this.pixels;
+	this.customImage;
+}
+
+PODASTImage.prototype.updateCustomImage = () => {
+	let reader = new FileReader();
+	// join the pixels into a Uint8Array
+	// TODO: dont concat entire PODASTPixel instances, just the values
+	const pixelValues = Uint8Array.from([].concat.apply([], this.pixels));
+	reader.readAsBinaryString(this)
 }
 
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
@@ -27,14 +36,14 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	let pixelIndex = i;
 	let previousPixel;
 	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
-	for(var p = 0; p < dataPortions.length; p++) {
-		let currentPortion = dataPortions[p];
+	for(var m = 0; m < dataPortions.length; m++) {
+		let currentPortion = dataPortions[m];
 		let nextPortion;
 		let relativeNextIndex;
 		let currentPixel = this.pixels[pixelIndex];
 		// update the data
 		currentPixel.binaryData = currentPortion;
-		if(p === dataPortions.length - 2) {
+		if(m === dataPortions.length - 2) {
 			/* This is the final iteration of actual data
 			 * We need to check how many bits the last portion contains,
 			 * because otherwise there is no way to tell if "01" or "1" was encrypted
@@ -54,9 +63,9 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			 * 			so the first 2 characters of "10111" should be discarded.
 			 * 	That's why we add that final portion to the dataPortions element. (see note I)
 			 */
-		} else if(p === dataPortions.length - 1) {
+		} else if(m === dataPortions.length - 1) {
 		} else {
-			nextPortion = dataPortions[p + 1];
+			nextPortion = dataPortions[m + 1];
 			// find next pixel
 			relativeNextIndex = getNextPixelIndex(nextPortion, pixelIndex, pixelsRange, p, d);
 			if(relativeNextIndex === false) {
@@ -83,7 +92,7 @@ PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d)
 			const currentPixelData = this.pixels[i].significanceArray.slice(-p-d, -p);
 			if(currentPixelData === data || i === index + lookahead - 1) {
 				if(i === index + lookahead - 1 && DEBUGGING >= 2) {
-					console.info("Unable to find pixel that didn't have to be edited, using last pixel in range instead.");
+					console.info("Unable to find pixel that already contained the data we're trying to hide, using last pixel in range instead.");
 				}
 				response = i - index;
 				break;
@@ -134,5 +143,7 @@ PODASTImage.prototype.show = function() {
 		}
 	} else {
 		// show PODASTImage
+		let reader = new FileReader();
+		
 	}
 };
