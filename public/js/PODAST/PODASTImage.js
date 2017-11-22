@@ -46,7 +46,15 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	// divide the plaintext binary into small portions, ready to be divided over the to be altered pixels
 	let dataPortions = plaintext.match(new RegExp("[01]{1," + d + "}", "g")); // "0111001" --> ["01", "11", "00", "1"] (example I)
 	// add bits indicator
-	dataPortions.push(addLeadingZeroes(decimalToBinary(dataPortions[dataPortions.length - 1].length), d));
+	try {
+		dataPortions.push(addLeadingZeroes(decimalToBinary(dataPortions[dataPortions.length - 1].length), d));
+	} catch(e) {
+		// invalid binary data
+		if(DEBUGGING >= 2) {
+			console.warn("Invalid or empty binary data specified.");
+		}
+		dataPortions = [];
+	}
 	if(DEBUGGING >= 3) {
 		console.log("data portions: ", dataPortions);
 	}
