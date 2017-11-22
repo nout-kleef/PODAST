@@ -75,10 +75,11 @@ $(document).ready(function() {
 		const plaintextBinary = toASCII($("#plaintext").val());
 		$("#plaintextBinary").val(plaintextBinary);
 	});
-	$("#extractedBinary").on("keyup change", function() {
+	$("#extractedBinary").on("keyup change", extractedUpdate);
+	function extractedUpdate() {
 		const extracted = fromASCII($("#extractedBinary").val());
 		$("#extracted").val(extracted);
-	});
+	}
 	// buttons
 	$("#encrypt").on("click", function() {
 		const plaintextBinary = $("#plaintextBinary").val();
@@ -90,6 +91,7 @@ $(document).ready(function() {
 		const privateKey = $("#privateKey").val();
 		const extractedBinary = outputImage.decrypt(privateKey);
 		$("#extractedBinary").val(extractedBinary);
+		extractedUpdate();
 	});
 });
 
