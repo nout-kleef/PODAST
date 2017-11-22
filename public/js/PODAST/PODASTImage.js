@@ -14,9 +14,9 @@ function PODASTImage(x, y, w, h, type, img) {
 	this.imageData;
 }
 
-PODASTImage.prototype.updateCustomImage = function() {
+PODASTImage.prototype.updateCustomImage = function(bytePixels) {
 	// create array of pixel.value arrays
-	const valuesArray = this.pixels.map(a => a.value);
+	const valuesArray = typeof bytePixels === "undefined" ? this.pixels.map(a => a.value) : bytePixels;
 	// join the pixels into a Uint8Array for a speed-up
 	this.bytePixels = Uint8Array.from([].concat.apply([], valuesArray));
 	this.imageData = ctx.getImageData(this.topLeft.x, this.topLeft.y, this.dimensions.width, this.dimensions.height);
@@ -24,9 +24,25 @@ PODASTImage.prototype.updateCustomImage = function() {
 };
 
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
-	// copy self to new, to be encrypted image
-	let newImage = new PODASTImage();
-	Object.assign(newImage, this);
+	if(arguments.length < 4) {
+		if(DEBUGGING >= 2) {
+			console.warn("Not enough parameters specified.");
+		}
+		return false;
+	}
+	if(typeof this.pixels === "undefined") {
+		if(this.build() === false) {
+			if(DEBUGGING >= 1) {
+				console.info("Please select an image before encrypting data.");
+			}
+		}
+		return false;
+	}
+	// copy img data
+	outputImage.img = this.img;
+	// prepare pixels
+	outputImage.build();
+	// Object.assign(outputImage, this);
 	// divide the plaintext binary into small portions, ready to be divided over the to be altered pixels
 	let dataPortions = plaintext.match(new RegExp("[01]{1," + d + "}", "g")); // "0111001" --> ["01", "11", "00", "1"] (example I)
 	// add bits indicator
@@ -38,15 +54,16 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	let pixelIndex = i;
 	let previousPixel;
 	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
-	// NOTE we are altering newImage, not this
+	// NOTE we are altering outputImage, not this
 	for(var m = 0; m < dataPortions.length - 1; m++) {
-		const currentPixel = newImage.pixels[pixelIndex];
+		const currentPixel = outputImage.pixels[pixelIndex];
 		const currentData = dataPortions[m];
 		const nextData = dataPortions[m + 1];
 		const currentPointer = 0;
 		// update data for current pixel
 		currentPixel.insertData(currentData.split(""), p);
-		const relativeNextPixelIndex = newImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
+		const relativeNextPixelIndex = outputImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
+		console.log(relativeNextPixelIndex);
 		if(relativeNextPixelIndex === false) {
 			if(DEBUGGING >= 1) {
 				console.warn("PODAST was unable to complete the encryption process with the following \n" +
@@ -61,7 +78,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 			if(m === dataPortions.length - 2) {
 				// possible bug: should be modularized or not?
 				const nextPixelIndex = pixelIndex + relativeNextPixelIndex;
-				let nextPixel = newImage.pixels[nextPixelIndex];
+				let nextPixel = outputImage.pixels[nextPixelIndex];
 				// update data in advance
 				nextPixel.insertData(nextData.split(""), p);
 				// because that pixel will be the last, we can safely set the pointer to 0-terminator
@@ -78,8 +95,8 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		}
 		pixelIndex += relativeNextPixelIndex;
 	}
-	newImage.updateCustomImage();
-	return newImage;
+	outputImage.updateCustomImage();
+	return outputImage;
 };
 
 PODASTImage.prototype.decrypt = function() {
@@ -173,8 +190,10 @@ PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d)
 			if(authenticPixelData === data) {
 				response = actualIndex - index;
 				break;
-			} else if(actualIndex === index + lookahead - 1 && DEBUGGING >= 2) {
-				console.info("Unable to find pixel that already contained the data we're trying to hide, using last pixel in range instead.");
+			} else if(actualIndex === index + lookahead - 1) {
+				if(DEBUGGING >= 2) {
+					console.info("Unable to find pixel that already contained the data we're trying to hide, using last pixel in range instead.");
+				}
 				response = actualIndex - index;
 				break;
 			}

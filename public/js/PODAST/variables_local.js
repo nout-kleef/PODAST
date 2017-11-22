@@ -13,7 +13,7 @@
  *	console.log(arr[i]); // just to check something temporarily
  * }
  */
-const DEBUGGING = 3;
+const DEBUGGING = 1;
 if(DEBUGGING > 0) {
 	console.info("Debugging level: " + DEBUGGING);
 }
