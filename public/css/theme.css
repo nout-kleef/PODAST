@@ -23,6 +23,7 @@ body {
 #imagePicker div.imageHolder {
 	display: inline-block;
 	margin-right: 30px;
+	margin-top: 10px;
 	border: 2px solid #000;
 }
 
