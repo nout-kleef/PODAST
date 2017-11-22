@@ -14,6 +14,8 @@ function PODASTImage(x, y, w, h, type, img) {
 	this.imageData;
 }
 
+PODASTImage.prototype.lastAction = "";
+
 PODASTImage.prototype.updateCustomImage = function(bytePixels) {
 	// create array of pixel.value arrays
 	const valuesArray = typeof bytePixels === "undefined" ? this.pixels.map(a => a.value) : bytePixels;
@@ -103,6 +105,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		pixelIndex += relativeNextPixelIndex;
 	}
 	outputImage.updateCustomImage();
+	PODASTImage.prototype.lastAction = "encrypt";
 	return generatePrivateKey(i, p, d);
 };
 
@@ -171,6 +174,7 @@ PODASTImage.prototype.decrypt = function() {
 			binaryDataString += currentDataPiece;
 		}
 	}
+	PODASTImage.prototype.lastAction = "decrypt";
 	return binaryDataString;
 };
 
@@ -246,6 +250,17 @@ PODASTImage.prototype.show = function() {
 	} else {
 		// show PODASTImage
 		putImageData(ctx, this.imageData, this.topLeft.x, this.topLeft.y);
+		if(PODASTImage.prototype.lastAction === "encrypt" && this.type === "input") {
+			stroke(0, 0, 255, 170);
+			strokeWeight(1);
+			noFill();
+			rect(this.topLeft.x - imageMargin * 0.25, this.topLeft.y - imageMargin * 0.25, this.dimensions.width + imageMargin * 0.5 - 1, this.dimensions.height + imageMargin * 0.5 - 1);
+		} else if(PODASTImage.prototype.lastAction === "decrypt" && this.type === "output") {
+			stroke(0, 0, 255, 170);
+			strokeWeight(1);
+			noFill();
+			rect(this.topLeft.x - imageMargin * 0.25, this.topLeft.y - imageMargin * 0.25, this.dimensions.width + imageMargin * 0.5 - 1, this.dimensions.height + imageMargin * 0.5 - 1);
+		}
 	}
 };
 
@@ -256,6 +271,7 @@ function putImageData(ctx, imageData, dx, dy) {
   const data = imageData.data;
   const height = imageData.height;
   const width = imageData.width;
+  noStroke();
   for (var y = 0; y < height; y++) {
     for (var x = 0; x < width; x++) {
       const pos = (y * width + x) * 4;

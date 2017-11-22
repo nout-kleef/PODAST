@@ -1,10 +1,10 @@
 // does it have something to do with displaying the images?
 // place it in this document!
 
-let imageWidth = 128;
-let imageHeight = 120;
+let imageWidth = 48;
+let imageHeight = 48;
 let imageMargin = 10;
-let headerHeight = 25;
+let headerHeight = 15;
 let headerMargin = 5;
 
 let getFullWidth = function() {return 2 * (imageWidth + 2 * imageMargin)};
