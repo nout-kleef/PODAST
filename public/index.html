@@ -29,7 +29,103 @@
 	</head>
 	<body>
 		<h1>PODAST steganography demo</h1>
-		<div class="workflow">
+		
+		<div id="imagePicker" class='left'>
+			<h3>Pick an image</h3>
+			<div class="imageHolder">
+				<img src="img/monalisa256.png">
+			</div>
+			<div class="imageHolder">
+				<img src="img/monalisa128.png">
+			</div>
+			<div class="imageHolder">
+				<img src="img/monalisa64.png">
+			</div>
+		</div>
+		<div id="controlsEncrypt" class='left'>
+			<h3>Configuration</h3>
+			<table>
+				<tr>
+					<td class='leftInputTable fifty'>
+						Text input
+					</td>
+					<td class='fifty'>
+						Text input in binary
+					</td>
+				</tr>
+				<tr>
+					<td class='leftInputTable fifty'>
+						<textarea id='plaintext'></textarea>
+					</td>
+					<td class='fifty'>
+						<textarea id='plaintextBinary'></textarea>
+					</td>
+				</tr>
+			</table>
+			<table>
+				<tr>
+					<td class='leftVariableTable fifty'>
+						First pixel index:
+					</td>
+					<td class='fifty'>
+						<input id="firstPixelIndex" class='variablesInput' type="number" min="0" max="0" value="0"></input>
+					</td>
+				</tr>
+				<tr>
+					<td class='leftVariableTable fifty'>
+						Amount of pointer bits:
+					</td>
+					<td class='fifty'>
+						<input id="pointerBits" class='variablesInput' type="number" min="1" max="24" value="1"></input>
+					</td>
+				</tr>
+				<tr>
+					<td class='leftVariableTable fifty'>
+						Amount of data bits: 
+					</td>
+					<td class='fifty'>
+						<input id="dataBits" class='variablesInput' type="number" min="1" max="24" value="1"></input>
+					</td>
+				</tr>
+			</table>
+			
+			<br>
+			
+			<button id='encrypt'>Encrypt</button><br><br>
+		</div>
+		<div id='controlsDecrypt' class='left'>
+
+			Private key: <input id='privateKey' type='text'></input>
+
+			<button id='decrypt'>Decrypt</button><br><br>
+
+			<table>
+				<tr>
+					<td class='leftOutputTable fifty'>
+						Text output in binary
+					</td>
+					<td class='fifty'>
+						Text input
+					</td>
+				</tr>
+				<tr>
+					<td class='leftOutputTable fifty'>
+						<textarea id='extractedBinary'></textarea>
+					</td>
+					<td class='fifty'>
+						<textarea id='extracted'></textarea>
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+
+		<div id='backgroundRight'>
+			<div id="canvasHolder" class="canvas-holder">
+			</div>
+		</div>
+
+		<!--<div class="workflow">
 			<h2>Workflow</h2>
 			<div class="col-50">
 				<h3>Hiding data (encryption)</h3>
@@ -49,40 +145,6 @@
 					<li>view extracted text</li>
 				</ol>
 			</div>
-		</div>
-		<div id="canvasHolder" class="canvas-holder">
-		</div>
-		<div id="controls">
-			<h3>Configuration</h3>
-			Text input: <textarea id='plaintext' col='4' row='4'></textarea>
-			Text input to binary: <textarea id='plaintextBinary' col='4' row='4'></textarea>
-			First pixel index: <input id="firstPixelIndex" type="number" min="0" max="0" value="0"></input>
-			Amount of pointer bits: <input id="pointerBits" type="number" min="1" max="24" value="1"></input>
-			Amount of data bits: <input id="dataBits" type="number" min="1" max="24" value="1"></input>
-
-			<button id='encrypt'>Encrypt</button><br><br>
-
-			Private key: <input id='privateKey' type='text'></input>
-
-			<button id='decrypt'>Decrypt</button><br><br>
-
-			Text output in binary: <textarea id='extractedBinary' col='4' row='4'></textarea>
-			Text output: <textarea id='extracted' col='4' row='4'></textarea>
-
-			
-			
-		</div>
-		<div id="imagePicker">
-			<h3>Pick an image</h3>
-			<div class="imageHolder">
-				<img src="img/monalisa256.png">
-			</div>
-			<div class="imageHolder">
-				<img src="img/monalisa128.png">
-			</div>
-			<div class="imageHolder">
-				<img src="img/monalisa64.png">
-			</div>
-		</div>
+		</div>-->
 	</body>
 </html>

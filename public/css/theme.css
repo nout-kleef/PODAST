@@ -22,9 +22,58 @@ body {
 
 #imagePicker div.imageHolder {
 	display: inline-block;
+	margin-right: 30px;
 	border: 2px solid #000;
 }
 
 #imagePicker div.imageHolder.selected {
 	border: 2px solid #35f;
+}
+
+img {
+	vertical-align:bottom;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    resize: none;
+}
+
+td.leftInputTable, td.leftVariableTable, td.leftOutputTable {
+	padding-right: 15px;
+}
+
+input.variablesInput {
+	width: 40%;
+}
+
+div.left {
+	max-width: 50%;
+}
+
+div#backgroundRight {
+	position: fixed;
+	top: 0px;
+	height: 100%;
+	right: 0px;
+	width: 50%;
+	background-color: rgb(51,51,51);
+}
+
+div#canvasHolder {
+	position: fixed;
+	top: 50%;
+  	left: 75%;
+  	transform: translate(-50%, -50%);
+	max-width:100%;
+}
+
+td.fifty {
+	width: 24%;
 }
