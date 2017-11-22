@@ -77,3 +77,7 @@ div#canvasHolder {
 td.fifty {
 	width: 24%;
 }
+
+.bigFont {
+	font-size: 130%;
+}
