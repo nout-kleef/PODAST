@@ -71,7 +71,6 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		// update data for current pixel
 		currentPixel.insertData(currentData.split(""), p);
 		const relativeNextPixelIndex = outputImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
-		console.log(relativeNextPixelIndex);
 		if(relativeNextPixelIndex === false) {
 			if(DEBUGGING >= 1) {
 				console.warn("PODAST was unable to complete the encryption process with the following \n" +
