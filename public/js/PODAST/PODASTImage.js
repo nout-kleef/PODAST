@@ -96,7 +96,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		pixelIndex += relativeNextPixelIndex;
 	}
 	outputImage.updateCustomImage();
-	return outputImage;
+	return generatePrivateKey(i, p, d);
 };
 
 PODASTImage.prototype.decrypt = function() {

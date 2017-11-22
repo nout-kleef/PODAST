@@ -70,4 +70,42 @@ $(document).ready(function() {
 	$("#dataBits").on("keyup change", function() {
 		dataBits = parseInt($("#dataBits").val());
 	});
+	// update text fields
+	$("#plaintext").on("keyup change", function() {
+		const plaintextBinary = toASCII($("#plaintext").val());
+		$("#plaintextBinary").val(plaintextBinary);
+	});
+	$("#extractedBinary").on("keyup change", function() {
+		const extracted = fromASCII($("#extractedBinary").val());
+		$("#extracted").val(extracted);
+	});
+	// buttons
+	$("#encrypt").on("click", function() {
+		const plaintextBinary = $("#plaintextBinary").val();
+		const privateKey = inputImage.encrypt(plaintextBinary, firstPixelIndex, pointerBits, dataBits);
+		// update private key
+		$("#privateKey").val(privateKey);
+	});
+	$("#decrypt").on("click", function() {
+		const privateKey = $("#privateKey").val();
+		const extractedBinary = outputImage.decrypt(privateKey);
+		$("#extractedBinary").val(extractedBinary);
+	});
 });
+
+function toASCII(text) {
+	let binaryString = "";
+	for(var i = 0; i < text.length; i++) {
+		binaryString += addLeadingZeroes(decimalToBinary(text.charAt(i).charCodeAt(0)), 8)
+	}
+	return binaryString;
+}
+
+function fromASCII(binaryString) {
+	let text = "";
+	for(var i = 0; i < binaryString.length; i += 8) {
+		const byte = binaryString.slice(i, i + 8);
+		text += String.fromCharCode(binaryToDecimal(byte));
+	}
+	return text;
+}
