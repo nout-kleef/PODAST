@@ -54,9 +54,23 @@
 		</div>
 		<div id="controls">
 			<h3>Configuration</h3>
+			Text input: <textarea id='plaintext' col='4' row='4'></textarea>
+			Text input to binary: <textarea id='plaintextBinary' col='4' row='4'></textarea>
 			First pixel index: <input id="firstPixelIndex" type="number" min="0" max="0" value="0"></input>
 			Amount of pointer bits: <input id="pointerBits" type="number" min="1" max="24" value="1"></input>
 			Amount of data bits: <input id="dataBits" type="number" min="1" max="24" value="1"></input>
+
+			<button id='encrypt'>Encrypt</button><br><br>
+
+			Private key: <input id='privateKey' type='text'></input>
+
+			<button id='decrypt'>Decrypt</button><br><br>
+
+			Text output in binary: <textarea id='extractedBinary' col='4' row='4'></textarea>
+			Text output: <textarea id='extracted' col='4' row='4'></textarea>
+
+			
+			
 		</div>
 		<div id="imagePicker">
 			<h3>Pick an image</h3>
