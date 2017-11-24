@@ -1,6 +1,6 @@
 # PODAST
 Pointer Data Steganography: new approach to hide data in media
-PODAST is being developed as an educational project by Daan Velthuis and Nout Kleef.
+PODAST is being developed as an educational project by [Daan Velthuis](https://github.com/dvelthuis) and [Nout Kleef](https://github.com/nout-kleef).
 
 Steganography is a way of keeping a message from being intercepted by a third party.
 This is often achieved by converting the message into binary, and dividing the binary message into smaller pieces,
