@@ -95,6 +95,22 @@ $(document).ready(function() {
 	});
 });
 
+$("#defaultCanvas0").ready(function() {
+	// make pictures downloadable
+	$("#defaultCanvas0").on("click", function() {
+		// check images
+		if(inRect({mouseX, mouseY}, inputImage.topLeft, inputImage.dimensions)) {
+			inputImage.download();
+		} else if(inRect({mouseX, mouseY}, outputImage.topLeft, outputImage.dimensions)) {
+			outputImage.download();
+		}
+	});
+});
+
+function inRect(point, topLeft, dimensions) {
+	return point.mouseX >= topLeft.x && point.mouseX <= topLeft.x + dimensions.width && point.mouseY >= topLeft.y && point.mouseY <= topLeft.y + dimensions.height;
+}
+
 function toASCII(text) {
 	let binaryString = "";
 	for(var i = 0; i < text.length; i++) {

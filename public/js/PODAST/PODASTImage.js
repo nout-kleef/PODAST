@@ -25,6 +25,43 @@ PODASTImage.prototype.updateCustomImage = function(bytePixels) {
 	this.imageData.data.set(this.bytePixels);
 };
 
+PODASTImage.prototype.download = function() {
+	let oldCanvas = document.getElementById("defaultCanvas0");
+	let newCanvas = document.createElement("canvas");
+	const w = this.dimensions.width;
+	const h = this.dimensions.height;
+	newCanvas.width = w;
+	newCanvas.height = h;
+	newCanvas.id = "downloadCanvas0";
+	let newContext = newCanvas.getContext("2d");
+	newContext.mozImageSmoothingEnabled = false;
+	newContext.webkitImageSmoothingEnabled = false;
+	newContext.msImageSmoothingEnabled = false;
+	newContext.imageSmoothingEnabled = false;
+	newContext.drawImage(oldCanvas, 2 * this.topLeft.x,  2 * this.topLeft.y, 2 * w, 2 * h, 0, 0, w, h);
+	let newImage = document.createElement("img");
+	// newImage.mozImageSmoothingEnabled = false;
+	// newImage.webkitImageSmoothingEnabled = false;
+	// newImage.msImageSmoothingEnabled = false;
+	// newImage.imageSmoothingEnabled = false;
+	newImage.src = newCanvas.toDataURL();
+	console.log(newImage);
+	const name = this.type + "_" + parseInt(this.dimensions.width, 10) + "X" + parseInt(this.dimensions.height, 10) + "P#i" + firstPixelIndex + "#p" + pointerBits + "#d" + dataBits;
+	downloadImage(name, clearUrl(newCanvas.toDataURL()), "png");
+};
+
+const clearUrl = url => url.replace(/^data:image\/\w+;base64,/, '');
+
+const downloadImage = (name, content, type) => {
+  var link = document.createElement('a');
+  link.style = 'position: fixed; left -10000px;';
+  link.href = `data:application/octet-stream;base64,${encodeURIComponent(content)}`;
+  link.download = /\.\w+/.test(name) ? name : `${name}.${type}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	if(arguments.length < 4) {
 		if(DEBUGGING >= 2) {
