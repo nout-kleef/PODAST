@@ -11,6 +11,11 @@ PODAST tries to make these changes even less obvious, by choosing pixels in such
 This is achieved by assigning the least significant bits in a pixel to a "pointer", which indicates the next pixel that is to be used for storing data.
 By doing so, we can point to the next pixel, which already stores the correct data without even altering any bits in the process.
 
+## demo
+The following image shows the source image (left), and the image containing the hidden data.
+Yes, they look very similar. No, they really aren't! (Inspect them using an image editor, if you like.)
+![source image and resulting image](result.png)
+
 # How to install
 Installing PODAST is quite easy.
 1. install a small http server to be able to serve image files on local environment
