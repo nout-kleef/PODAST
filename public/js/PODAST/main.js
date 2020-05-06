@@ -130,3 +130,14 @@ function fromASCII(binaryString) {
 	}
 	return text;
 }
+
+function logSteps(type) {
+	switch (type) {
+		case 1: // encryption direction
+			return document.getElementById("showEncryptionSteps").checked;
+		case 2: // decryption direction
+			return document.getElementById("showDecryptionSteps").checked;
+		default:
+			return false;
+	}
+}
