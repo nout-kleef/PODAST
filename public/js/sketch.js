@@ -38,7 +38,7 @@ function draw() {
 	// display images
 	inputImage.show();
 	outputImage.show();
-	if (DEBUGGING >= 2) {
+	if (DEBUGGING >= 3) {
 		fill(255, 0, 0, 190);
 		noStroke();
 		textSize(16);

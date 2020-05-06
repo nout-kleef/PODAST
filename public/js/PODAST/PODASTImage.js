@@ -78,12 +78,15 @@ PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
 		}
 		return false;
 	}
-	// copy img data
+	const steps = logSteps(1);
+	let pixelIndex = i;
+	let previousPixel;
+	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
 	outputImage.img = this.img;
-	// prepare pixels
 	outputImage.build();
+
 	// Object.assign(outputImage, this);
-	// divide the plaintext binary into small portions, ready to be divided over the to be altered pixels
+	// divide the plaintext binary into small portions
 	let dataPortions = plaintext.match(new RegExp("[01]{1," + d + "}", "g")); // "0111001" --> ["01", "11", "00", "1"] (example I)
 	// add bits indicator
 	try {
@@ -98,19 +101,18 @@ PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
 	if (DEBUGGING >= 3) {
 		console.log("data portions: ", dataPortions);
 	}
-	// hide each portion in a different pixel
-	let pixelIndex = i;
-	let previousPixel;
-	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
-	// NOTE we are altering outputImage, not this
+
 	for (var m = 0; m < dataPortions.length - 1; m++) {
 		const currentPixel = outputImage.pixels[pixelIndex];
 		const currentData = dataPortions[m];
 		const nextData = dataPortions[m + 1];
 		const currentPointer = 0;
 		// update data for current pixel
+		const oldColour = pixelToRGB(currentPixel);
+		const oldSignificanceArray = currentPixel.getSignificanceArray();
 		currentPixel.insertData(currentData.split(""), p);
 		const relativeNextPixelIndex = outputImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
+		let newSignificanceArray = currentPixel.getSignificanceArray();
 		if (relativeNextPixelIndex === false) {
 			if (DEBUGGING >= 1) {
 				console.warn("PODAST was unable to complete the encryption process with the following \n" +
@@ -120,25 +122,43 @@ PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
 			}
 			return false;
 		} else {
-			// update pointer for current pixel
 			currentPixel.insertPointer(addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p).split(""));
 			if (m === dataPortions.length - 2) {
 				// possible bug: should be modularized or not?
 				const nextPixelIndex = pixelIndex + relativeNextPixelIndex;
 				let nextPixel = outputImage.pixels[nextPixelIndex];
-				// update data in advance
+
 				nextPixel.insertData(nextData.split(""), p);
-				// because that pixel will be the last, we can safely set the pointer to 0-terminator
+				// 0-terminator to signify the end of our secret message
 				nextPixel.insertPointer(addLeadingZeroes(0, p).split(""));
-				// done!
 				if (DEBUGGING >= 1) {
 					console.info("Success! PODAST successfully encrypted your data with the following parameters: \n" +
 						"i=" + i + ", p=" + p + ", d=" + d + ". Want to share your encrypted image? First, download your \n" +
 						"encrypted image, and send it to the receiver. Make sure you also share your decryption key: \n" +
-						"%c" + generatePrivateKey(i, p, d) + "%c , or else the receiver won't be able to read your message.", "font-weight: 900", "font-weight: initial");
+						"%c" + generatePrivateKey(i, p, d) + "%c, or else the receiver won't be able to read your message.", "font-weight: 900", "font-weight: initial");
 				}
-				break;
 			}
+			newSignificanceArray = currentPixel.getSignificanceArray();
+		}
+		if (steps) {
+			const oldData = oldSignificanceArray.splice(-(p + d), d).join("");
+			const oldPointer = oldSignificanceArray.splice(-p).join("");
+			const newData = newSignificanceArray.splice(-(p + d), d).join("");
+			const newPointer = newSignificanceArray.splice(-p).join("");
+			const newColour = pixelToRGB(currentPixel);
+			console.log("Processing chunk #" + m + ": " + currentData +
+				"\n  Next pixel found at: #" + pixelIndex + " + " + relativeNextPixelIndex +
+				"\n  Data   : " + oldData + " --> " + newData +
+				(oldData === newData ? " (no change)" : "") +
+				"\n  Pointer: " + oldPointer + " --> " + newPointer +
+				(oldPointer === newPointer ? " (no change)" : "") +
+				"\nOverall, we changed %c  %c " + oldColour +
+				" to %c  %c " + newColour,
+				"background: " + oldColour + ";",
+				"background: initial;",
+				"background: " + newColour + ";",
+				"background: initial;"
+			);
 		}
 		pixelIndex += relativeNextPixelIndex;
 	}
@@ -225,17 +245,18 @@ PODASTImage.prototype.inspectPixels = function () {
 
 PODASTImage.prototype.getNextPixelIndex = function (data, index, lookahead, p, d) {
 	let response = false;
-	for (var i = index + 1 /* current is bound to be altered */; i < index + lookahead; i++) {
-		// TODO optimize?
+	for (var i = index + 1; i < index + lookahead; i++) {
 		const actualIndex = i % this.pixels.length;
 		if (this.pixels[actualIndex].isAltered()) {
-			// can't alter it twice, would corrupt existing data
 			if (DEBUGGING >= 3) {
-				console.log("pixel at (" + actualIndex + ") is altered.");
+				console.log("pixel at (" + actualIndex + ") is already altered.");
 			}
 			continue;
 		} else {
-			const authenticPixelData = this.pixels[actualIndex].getSignificanceArray().slice(-p - d, -p).join("");
+			const authenticPixelData = this.pixels[actualIndex]
+				.getSignificanceArray() // order by significance
+				.slice(-(p + d), -p) // extract the "data" bits
+				.join("");
 			if (authenticPixelData === data) {
 				response = actualIndex - index;
 				break;
