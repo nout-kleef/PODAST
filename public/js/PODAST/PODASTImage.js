@@ -64,6 +64,7 @@ const downloadImage = (name, content, type) => {
 }
 
 PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
+	let changedCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 	if (arguments.length < 4) {
 		if (DEBUGGING >= 2) {
 			console.warn("Not enough parameters specified.");
@@ -131,16 +132,16 @@ PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
 				nextPixel.insertData(nextData.split(""), p);
 				// 0-terminator to signify the end of our secret message
 				nextPixel.insertPointer(addLeadingZeroes(0, p).split(""));
-				if (DEBUGGING >= 1) {
-					console.info("Success! PODAST successfully encrypted your data with the following parameters: \n" +
-						"i=" + i + ", p=" + p + ", d=" + d + ". Want to share your encrypted image? First, download your \n" +
-						"encrypted image, and send it to the receiver. Make sure you also share your decryption key: \n" +
-						"%c" + generatePrivateKey(i, p, d) + "%c, or else the receiver won't be able to read your message.", "font-weight: 900", "font-weight: initial");
-				}
 			}
 			newSignificanceArray = currentPixel.getSignificanceArray();
 		}
 		if (steps) {
+			// overall statistics
+			for (let bit = 0; bit < 24; bit++) {
+				if (oldSignificanceArray[bit] !== newSignificanceArray[bit]) {
+					changedCount[bit]++;
+				}
+			}
 			const oldData = oldSignificanceArray.splice(-(p + d), d).join("");
 			const oldPointer = oldSignificanceArray.splice(-p).join("");
 			const newData = newSignificanceArray.splice(-(p + d), d).join("");
@@ -162,6 +163,25 @@ PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
 		}
 		pixelIndex += relativeNextPixelIndex;
 	}
+	if (DEBUGGING >= 1) {
+		console.info("Success! PODAST successfully encrypted your data with the following parameters: \n" +
+			"i=" + i + ", p=" + p + ", d=" + d + ". Want to share your encrypted image? First, download your \n" +
+			"encrypted image, and send it to the receiver. Make sure you also share your decryption key: \n" +
+			"%c" + generatePrivateKey(i, p, d) + "%c, or else the receiver won't be able to read your message.", "font-weight: 900", "font-weight: initial");
+	}
+	// compute overall change
+	const numPix = this.pixels.length;
+	let change = 0, original = 0;
+	for (let bit = 0; bit < 24; bit++) {
+		const exp = bit % 8;
+		change += changedCount[23 - bit] << exp;
+		original += numPix << exp;
+	}
+	if (steps) {
+		console.info("All in all, we altered %" + (100 * change / original).toPrecision(3) +
+			" of our input image.");
+	}
+
 	outputImage.updateCustomImage();
 	PODASTImage.prototype.lastAction = "encrypt";
 	return generatePrivateKey(i, p, d);

@@ -18,7 +18,6 @@ let dataBits; // amount of bits just before the pointer bits, holding the data t
  * // 			r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b  r  g  b
  */
 
-let changedCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 function init() {
 	inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input");
