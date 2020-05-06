@@ -219,35 +219,43 @@ PODASTImage.prototype.decrypt = function () {
 		d = arguments[1];
 		p = arguments[2];
 	}
+	const steps = logSteps(2);
 	// using the pixels array would be cheating,
 	// we have to assume that all we have is the Uint8Array,
 	// because that is practically the picture a receiver would decrypt.
-
-	// create new pixels array (local scope)
 	const temporaryPixels = quickBuild(this.bytePixels);
-	// currentPixel is temporaryPixels[i]
 	let currentIndex = i;
 	let currentPixel = temporaryPixels[currentIndex];
 	let currentSignificanceArray = currentPixel.getSignificanceArray();
 	let currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
-	let binaryDataString = currentDecimalPointer === 0 ? "" /* may be stupid, but data wasn't intended to be read */ : currentSignificanceArray.slice(-d - p, -p).join("");
-	// while not terminated (0-terminator in pointer)
+	let binaryDataString = currentDecimalPointer === 0 ?
+		"" : currentSignificanceArray.slice(-d - p, -p).join("");
+
 	while (currentDecimalPointer !== 0) {
+		if (steps) {
+			console.log("We are at pixel #" + currentIndex + "." +
+				"\n  Data   : " + currentSignificanceArray.slice(-(d + p), -p).join("") +
+				"\n  Pointer: " + currentSignificanceArray.slice(-p).join("") +
+				"\nMoving forward to pixel #" + currentIndex + " + " + currentDecimalPointer + "..."
+			);
+		}
 		currentIndex = (currentIndex + currentDecimalPointer) % temporaryPixels.length;
 		currentPixel = temporaryPixels[currentIndex];
 		currentSignificanceArray = currentPixel.getSignificanceArray();
 		currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
-		// remember, 0-terminator means that this piece of data tells us how many digits are meaningful.
-		// it's not actual data.
 		let currentDataPiece = currentSignificanceArray.slice(-d - p, -p).join("");
 		if (currentDecimalPointer === 0) {
 			const currentDataDecimalValue = parseInt(currentDataPiece, 2);
-			// get previous data
 			const previousDataPiece = binaryDataString.slice(-d);
-			// get necessary part
+			// if we encounter a 0-terminator, the "data" tells us what portion of the
+			// last real pixel contains data
 			const previousActualData = previousDataPiece.slice(-currentDataDecimalValue);
-			// cut out unnecessary digits and add necessary
 			binaryDataString = binaryDataString.slice(0, -d) + previousActualData;
+			if (steps) {
+				console.info("Pixel #" + currentIndex + " contains a 0-terminator. Finished!" +
+					"\nData retrieved:");
+				console.log(binaryDataString);
+			}
 		} else {
 			binaryDataString += currentDataPiece;
 		}
