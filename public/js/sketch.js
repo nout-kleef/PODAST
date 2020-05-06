@@ -7,8 +7,8 @@ let imageMargin = 10;
 let headerHeight = 15;
 let headerMargin = 5;
 
-let getFullWidth = function() {return 2 * (imageWidth + 2 * imageMargin)};
-let getFullHeight = function() {return headerHeight + headerMargin + imageHeight + 2 * imageMargin};
+let getFullWidth = function () { return 2 * (imageWidth + 2 * imageMargin) };
+let getFullHeight = function () { return headerHeight + headerMargin + imageHeight + 2 * imageMargin };
 
 let ctx;
 
@@ -20,7 +20,6 @@ function setup() {
 	// frameRate(10);
 	// prevent antialiasing
 	ctx = document.getElementById("defaultCanvas0").getContext("2d");
-	ctx.mozImageSmoothingEnabled = false;
 	ctx.webkitImageSmoothingEnabled = false;
 	ctx.msImageSmoothingEnabled = false;
 	ctx.imageSmoothingEnabled = false;
@@ -39,7 +38,7 @@ function draw() {
 	// display images
 	inputImage.show();
 	outputImage.show();
-	if(DEBUGGING >= 2) {
+	if (DEBUGGING >= 2) {
 		fill(255, 0, 0, 190);
 		noStroke();
 		textSize(16);
