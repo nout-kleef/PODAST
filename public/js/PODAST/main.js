@@ -22,11 +22,11 @@ function init() {
 	inputImage = new PODASTImage(imageMargin, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "input");
 	outputImage = new PODASTImage(imageMargin * 3 + imageWidth, headerHeight + headerMargin + imageMargin, imageWidth, imageHeight, "output");
 	// select new input image
-	$(".imageHolder").on("click", function() {
+	$(".imageHolder").on("click", function () {
 		// deselect all
 		$(".imageHolder").removeClass("selected");
 		// load image
-		if(DEBUGGING >= 3) {
+		if (DEBUGGING >= 3) {
 			console.log($("img", this).attr("src"));
 		}
 		loadImage($("img", this).attr("src"), img => {
@@ -40,7 +40,7 @@ function init() {
 				height: img.height
 			};
 		}, event => {
-			if(DEBUGGING >= 2) {
+			if (DEBUGGING >= 2) {
 				console.warn("Something went wrong loading selected image");
 			}
 		});
@@ -55,23 +55,23 @@ function resizeCanvasForNewImage(newWidth, newHeight) {
 	resizeCanvas(getFullWidth(), getFullHeight());
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
 	// initiate variables
 	firstPixelIndex = parseInt($("#firstPixelIndex").val());
 	pointerBits = parseInt($("#pointerBits").val());
 	dataBits = parseInt($("#dataBits").val());
 	// keep variables up to date
-	$("#firstPixelIndex").on("keyup change", function() {
+	$("#firstPixelIndex").on("keyup change", function () {
 		firstPixelIndex = parseInt($("#firstPixelIndex").val());
 	});
-	$("#pointerBits").on("keyup change", function() {
+	$("#pointerBits").on("keyup change", function () {
 		pointerBits = parseInt($("#pointerBits").val());
 	});
-	$("#dataBits").on("keyup change", function() {
+	$("#dataBits").on("keyup change", function () {
 		dataBits = parseInt($("#dataBits").val());
 	});
 	// update text fields
-	$("#plaintext").on("keyup change", function() {
+	$("#plaintext").on("keyup change", function () {
 		const plaintextBinary = toASCII($("#plaintext").val());
 		$("#plaintextBinary").val(plaintextBinary);
 	});
@@ -81,13 +81,13 @@ $(document).ready(function() {
 		$("#extracted").val(extracted);
 	}
 	// buttons
-	$("#encrypt").on("click", function() {
+	$("#encrypt").on("click", function () {
 		const plaintextBinary = $("#plaintextBinary").val();
 		const privateKey = inputImage.encrypt(plaintextBinary, firstPixelIndex, pointerBits, dataBits);
 		// update private key
 		$("#privateKey").val(privateKey);
 	});
-	$("#decrypt").on("click", function() {
+	$("#decrypt").on("click", function () {
 		const privateKey = $("#privateKey").val();
 		const extractedBinary = outputImage.decrypt(privateKey);
 		$("#extractedBinary").val(extractedBinary);
@@ -95,25 +95,28 @@ $(document).ready(function() {
 	});
 });
 
-$("#defaultCanvas0").ready(function() {
+$("#defaultCanvas0").ready(function () {
 	// make pictures downloadable
-	$("#defaultCanvas0").on("click", function() {
+	$("#defaultCanvas0").on("click", function () {
 		// check images
-		if(inRect({mouseX, mouseY}, inputImage.topLeft, inputImage.dimensions)) {
+		if (inRect({ mouseX, mouseY }, inputImage.topLeft, inputImage.dimensions)) {
 			inputImage.download();
-		} else if(inRect({mouseX, mouseY}, outputImage.topLeft, outputImage.dimensions)) {
+		} else if (inRect({ mouseX, mouseY }, outputImage.topLeft, outputImage.dimensions)) {
 			outputImage.download();
 		}
 	});
 });
 
 function inRect(point, topLeft, dimensions) {
-	return point.mouseX >= topLeft.x && point.mouseX <= topLeft.x + dimensions.width && point.mouseY >= topLeft.y && point.mouseY <= topLeft.y + dimensions.height;
+	return (point.mouseX >= topLeft.x) &&
+		(point.mouseX <= topLeft.x + dimensions.width) &&
+		(point.mouseY >= topLeft.y) &&
+		(point.mouseY <= topLeft.y + dimensions.height);
 }
 
 function toASCII(text) {
 	let binaryString = "";
-	for(var i = 0; i < text.length; i++) {
+	for (var i = 0; i < text.length; i++) {
 		binaryString += addLeadingZeroes(decimalToBinary(text.charAt(i).charCodeAt(0)), 8)
 	}
 	return binaryString;
@@ -121,7 +124,7 @@ function toASCII(text) {
 
 function fromASCII(binaryString) {
 	let text = "";
-	for(var i = 0; i < binaryString.length; i += 8) {
+	for (var i = 0; i < binaryString.length; i += 8) {
 		const byte = binaryString.slice(i, i + 8);
 		text += String.fromCharCode(binaryToDecimal(byte));
 	}

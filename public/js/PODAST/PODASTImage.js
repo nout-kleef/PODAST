@@ -16,7 +16,7 @@ function PODASTImage(x, y, w, h, type, img) {
 
 PODASTImage.prototype.lastAction = "";
 
-PODASTImage.prototype.updateCustomImage = function(bytePixels) {
+PODASTImage.prototype.updateCustomImage = function (bytePixels) {
 	// create array of pixel.value arrays
 	const valuesArray = typeof bytePixels === "undefined" ? this.pixels.map(a => a.value) : bytePixels;
 	// join the pixels into a Uint8Array for a speed-up
@@ -25,7 +25,8 @@ PODASTImage.prototype.updateCustomImage = function(bytePixels) {
 	this.imageData.data.set(this.bytePixels);
 };
 
-PODASTImage.prototype.download = function() {
+PODASTImage.prototype.download = function () {
+	console.log(this);
 	let oldCanvas = document.getElementById("defaultCanvas0");
 	let newCanvas = document.createElement("canvas");
 	const w = this.dimensions.width;
@@ -38,7 +39,7 @@ PODASTImage.prototype.download = function() {
 	newContext.webkitImageSmoothingEnabled = false;
 	newContext.msImageSmoothingEnabled = false;
 	newContext.imageSmoothingEnabled = false;
-	newContext.drawImage(oldCanvas, 2 * this.topLeft.x,  2 * this.topLeft.y, 2 * w, 2 * h, 0, 0, w, h);
+	newContext.drawImage(oldCanvas, this.topLeft.x, this.topLeft.y, w, h, 0, 0, w, h);
 	let newImage = document.createElement("img");
 	// newImage.mozImageSmoothingEnabled = false;
 	// newImage.webkitImageSmoothingEnabled = false;
@@ -53,25 +54,25 @@ PODASTImage.prototype.download = function() {
 const clearUrl = url => url.replace(/^data:image\/\w+;base64,/, '');
 
 const downloadImage = (name, content, type) => {
-  var link = document.createElement('a');
-  link.style = 'position: fixed; left -10000px;';
-  link.href = `data:application/octet-stream;base64,${encodeURIComponent(content)}`;
-  link.download = /\.\w+/.test(name) ? name : `${name}.${type}`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+	var link = document.createElement('a');
+	link.style = 'position: fixed; left -10000px;';
+	link.href = `data:application/octet-stream;base64,${encodeURIComponent(content)}`;
+	link.download = /\.\w+/.test(name) ? name : `${name}.${type}`;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
 }
 
-PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
-	if(arguments.length < 4) {
-		if(DEBUGGING >= 2) {
+PODASTImage.prototype.encrypt = function (plaintext, i, p, d) {
+	if (arguments.length < 4) {
+		if (DEBUGGING >= 2) {
 			console.warn("Not enough parameters specified.");
 		}
 		return false;
 	}
-	if(typeof this.pixels === "undefined") {
-		if(this.build() === false) {
-			if(DEBUGGING >= 1) {
+	if (typeof this.pixels === "undefined") {
+		if (this.build() === false) {
+			if (DEBUGGING >= 1) {
 				console.info("Please select an image before encrypting data.");
 			}
 		}
@@ -87,14 +88,14 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	// add bits indicator
 	try {
 		dataPortions.push(addLeadingZeroes(decimalToBinary(dataPortions[dataPortions.length - 1].length), d));
-	} catch(e) {
+	} catch (e) {
 		// invalid binary data
-		if(DEBUGGING >= 2) {
+		if (DEBUGGING >= 2) {
 			console.warn("Invalid or empty binary data specified.");
 		}
 		dataPortions = [];
 	}
-	if(DEBUGGING >= 3) {
+	if (DEBUGGING >= 3) {
 		console.log("data portions: ", dataPortions);
 	}
 	// hide each portion in a different pixel
@@ -102,7 +103,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	let previousPixel;
 	const pixelsRange = Math.pow(2, p); // look for pixels 0 to pixelsRange pixels from current
 	// NOTE we are altering outputImage, not this
-	for(var m = 0; m < dataPortions.length - 1; m++) {
+	for (var m = 0; m < dataPortions.length - 1; m++) {
 		const currentPixel = outputImage.pixels[pixelIndex];
 		const currentData = dataPortions[m];
 		const nextData = dataPortions[m + 1];
@@ -110,8 +111,8 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		// update data for current pixel
 		currentPixel.insertData(currentData.split(""), p);
 		const relativeNextPixelIndex = outputImage.getNextPixelIndex(nextData, pixelIndex, pixelsRange, p, d);
-		if(relativeNextPixelIndex === false) {
-			if(DEBUGGING >= 1) {
+		if (relativeNextPixelIndex === false) {
+			if (DEBUGGING >= 1) {
 				console.warn("PODAST was unable to complete the encryption process with the following \n" +
 					"parameters: i=" + i + ", p=" + p + ", d=" + d + ", because it couldn't find any unaltered \n" +
 					"pixels within " + pixelsRange + " pixels from the current pixel.\n" +
@@ -121,7 +122,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 		} else {
 			// update pointer for current pixel
 			currentPixel.insertPointer(addLeadingZeroes(decimalToBinary(relativeNextPixelIndex), p).split(""));
-			if(m === dataPortions.length - 2) {
+			if (m === dataPortions.length - 2) {
 				// possible bug: should be modularized or not?
 				const nextPixelIndex = pixelIndex + relativeNextPixelIndex;
 				let nextPixel = outputImage.pixels[nextPixelIndex];
@@ -130,7 +131,7 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 				// because that pixel will be the last, we can safely set the pointer to 0-terminator
 				nextPixel.insertPointer(addLeadingZeroes(0, p).split(""));
 				// done!
-				if(DEBUGGING >= 1) {
+				if (DEBUGGING >= 1) {
 					console.info("Success! PODAST successfully encrypted your data with the following parameters: \n" +
 						"i=" + i + ", p=" + p + ", d=" + d + ". Want to share your encrypted image? First, download your \n" +
 						"encrypted image, and send it to the receiver. Make sure you also share your decryption key: \n" +
@@ -146,26 +147,26 @@ PODASTImage.prototype.encrypt = function(plaintext, i, p, d) {
 	return generatePrivateKey(i, p, d);
 };
 
-PODASTImage.prototype.decrypt = function() {
+PODASTImage.prototype.decrypt = function () {
 	let i;
 	let d;
 	let p;
-	if(arguments.length === 0) {
+	if (arguments.length === 0) {
 		// invalid
-		if(DEBUGGING >= 1) {
+		if (DEBUGGING >= 1) {
 			console.warn("Not enough arguments specified.");
 		}
 		return false;
-	} else if(arguments.length === 1) {
+	} else if (arguments.length === 1) {
 		// private key?
 		let matches;
 		try {
 			matches = arguments[0].match(validatePrivateKeyRegEx);
-		} catch(exception) {
+		} catch (exception) {
 			matches = null;
 		}
-		if(matches === null) {
-			if(DEBUGGING >= 1) {
+		if (matches === null) {
+			if (DEBUGGING >= 1) {
 				console.warn("Invalid private key format specified.");
 			}
 			return false;
@@ -173,7 +174,7 @@ PODASTImage.prototype.decrypt = function() {
 		i = parseInt(matches[1], 10);
 		d = parseInt(matches[2], 10);
 		p = parseInt(matches[3], 10);
-	} else if(arguments.length === 3) {
+	} else if (arguments.length === 3) {
 		i = arguments[0];
 		d = arguments[1];
 		p = arguments[2];
@@ -189,17 +190,17 @@ PODASTImage.prototype.decrypt = function() {
 	let currentPixel = temporaryPixels[currentIndex];
 	let currentSignificanceArray = currentPixel.getSignificanceArray();
 	let currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
-	let binaryDataString = currentDecimalPointer === 0 ? "" /* may be stupid, but data wasn't intended to be read */ : currentSignificanceArray.slice(-d-p, -p).join("");
+	let binaryDataString = currentDecimalPointer === 0 ? "" /* may be stupid, but data wasn't intended to be read */ : currentSignificanceArray.slice(-d - p, -p).join("");
 	// while not terminated (0-terminator in pointer)
-	while(currentDecimalPointer !== 0) {
+	while (currentDecimalPointer !== 0) {
 		currentIndex = (currentIndex + currentDecimalPointer) % temporaryPixels.length;
 		currentPixel = temporaryPixels[currentIndex];
 		currentSignificanceArray = currentPixel.getSignificanceArray();
 		currentDecimalPointer = parseInt(currentSignificanceArray.slice(-p).join(""), 2);
 		// remember, 0-terminator means that this piece of data tells us how many digits are meaningful.
 		// it's not actual data.
-		let currentDataPiece = currentSignificanceArray.slice(-d-p, -p).join("");
-		if(currentDecimalPointer === 0) {
+		let currentDataPiece = currentSignificanceArray.slice(-d - p, -p).join("");
+		if (currentDecimalPointer === 0) {
 			const currentDataDecimalValue = parseInt(currentDataPiece, 2);
 			// get previous data
 			const previousDataPiece = binaryDataString.slice(-d);
@@ -216,30 +217,30 @@ PODASTImage.prototype.decrypt = function() {
 };
 
 // for debugging purposes
-PODASTImage.prototype.inspectPixels = function() {
-	for(var i = 0; i < this.pixels.length; i++) {
-		if(this.pixels[i].isAltered()) console.log("Altered pixel at (" + i + "): ", this.pixels[i]);
+PODASTImage.prototype.inspectPixels = function () {
+	for (var i = 0; i < this.pixels.length; i++) {
+		if (this.pixels[i].isAltered()) console.log("Altered pixel at (" + i + "): ", this.pixels[i]);
 	}
 };
 
-PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d) {
+PODASTImage.prototype.getNextPixelIndex = function (data, index, lookahead, p, d) {
 	let response = false;
-	for(var i = index + 1 /* current is bound to be altered */; i < index + lookahead; i++) {
+	for (var i = index + 1 /* current is bound to be altered */; i < index + lookahead; i++) {
 		// TODO optimize?
 		const actualIndex = i % this.pixels.length;
-		if(this.pixels[actualIndex].isAltered()) {
+		if (this.pixels[actualIndex].isAltered()) {
 			// can't alter it twice, would corrupt existing data
-			if(DEBUGGING >= 3) {
+			if (DEBUGGING >= 3) {
 				console.log("pixel at (" + actualIndex + ") is altered.");
 			}
 			continue;
 		} else {
-			const authenticPixelData = this.pixels[actualIndex].getSignificanceArray().slice(-p-d, -p).join("");
-			if(authenticPixelData === data) {
+			const authenticPixelData = this.pixels[actualIndex].getSignificanceArray().slice(-p - d, -p).join("");
+			if (authenticPixelData === data) {
 				response = actualIndex - index;
 				break;
-			} else if(actualIndex === index + lookahead - 1) {
-				if(DEBUGGING >= 2) {
+			} else if (actualIndex === index + lookahead - 1) {
+				if (DEBUGGING >= 2) {
 					console.info("Unable to find pixel that already contained the data we're trying to hide, using last pixel in range instead.");
 				}
 				response = actualIndex - index;
@@ -250,23 +251,23 @@ PODASTImage.prototype.getNextPixelIndex = function(data, index, lookahead, p, d)
 	return response;
 };
 
-PODASTImage.prototype.build = function() {
-	if(typeof this.img === "undefined" || this.img.pixels.length === 0) {
-		if(DEBUGGING >= 2) {
+PODASTImage.prototype.build = function () {
+	if (typeof this.img === "undefined" || this.img.pixels.length === 0) {
+		if (DEBUGGING >= 2) {
 			console.warn("Not ready to build image yet.");
 		}
 		return false;
 	}
 	this.pixels = [];
 	let originalRgbaPixels = Array.from(this.img.pixels); // Uint8ClampedArray to Array
-	for(var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
+	for (var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
 		this.pixels.push(new PODASTPixel(originalRgbaPixels.slice(i, i + 4)));
 	}
 	this.updateCustomImage();
 };
 
-PODASTImage.prototype.show = function() {
-	if(typeof this.bytePixels === 'undefined') {
+PODASTImage.prototype.show = function () {
+	if (typeof this.bytePixels === 'undefined') {
 		// show box indicating where image can be shown
 		noFill();
 		stroke(127, 127, 0);
@@ -278,21 +279,21 @@ PODASTImage.prototype.show = function() {
 		noStroke();
 		textAlign(CENTER);
 		let str;
-		if(this.type === "input") {
+		if (this.type === "input") {
 			str = "Upload an image to see it displayed here.";
-		} else if(this.type === "output") {
+		} else if (this.type === "output") {
 			str = "Upload an image to see the image\n after encryption displayed here.";
 		}
 		text(str, this.topLeft.x + 0.5 * this.dimensions.width, this.topLeft.y + 0.5 * this.dimensions.height);
 	} else {
 		// show PODASTImage
 		putImageData(ctx, this.imageData, this.topLeft.x, this.topLeft.y);
-		if(PODASTImage.prototype.lastAction === "encrypt" && this.type === "input") {
+		if (PODASTImage.prototype.lastAction === "encrypt" && this.type === "input") {
 			stroke(0, 0, 255, 170);
 			strokeWeight(1);
 			noFill();
 			rect(this.topLeft.x - imageMargin * 0.25, this.topLeft.y - imageMargin * 0.25, this.dimensions.width + imageMargin * 0.5 - 1, this.dimensions.height + imageMargin * 0.5 - 1);
-		} else if(PODASTImage.prototype.lastAction === "decrypt" && this.type === "output") {
+		} else if (PODASTImage.prototype.lastAction === "decrypt" && this.type === "output") {
 			stroke(0, 0, 255, 170);
 			strokeWeight(1);
 			noFill();
@@ -305,23 +306,23 @@ PODASTImage.prototype.show = function() {
 // TODO: optimize with base64 data instead of changing fillstyle every pixel
 // currently takes ~60ms to run for a 172x256 png!
 function putImageData(ctx, imageData, dx, dy) {
-  const data = imageData.data;
-  const height = imageData.height;
-  const width = imageData.width;
-  noStroke();
-  for (var y = 0; y < height; y++) {
-    for (var x = 0; x < width; x++) {
-      const pos = (y * width + x) * 4;
-      ctx.fillStyle = 'rgb(' + data[pos] + ',' + data[pos + 1] + ',' + data[pos + 2] + ')';
-      ctx.fillRect(x + dx, y + dy, 1, 1);
-    }
-  }
+	const data = imageData.data;
+	const height = imageData.height;
+	const width = imageData.width;
+	noStroke();
+	for (var y = 0; y < height; y++) {
+		for (var x = 0; x < width; x++) {
+			const pos = (y * width + x) * 4;
+			ctx.fillStyle = 'rgb(' + data[pos] + ',' + data[pos + 1] + ',' + data[pos + 2] + ')';
+			ctx.fillRect(x + dx, y + dy, 1, 1);
+		}
+	}
 }
 
 function quickBuild(imageData) {
 	let pixels = [];
 	let originalRgbaPixels = Array.from(imageData);
-	for(var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
+	for (var i = 0; i < originalRgbaPixels.length - 3; i += 4) {
 		pixels.push(new PODASTPixel(originalRgbaPixels.slice(i, i + 4)));
 	}
 	return pixels;
